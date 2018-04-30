@@ -5,6 +5,11 @@ import java.sql.Statement;
 
 public class Database {
 	
+	public void query()
+	{
+		
+	}
+	
 	public void delete(String table, String field, String operator, String value)
 	{
 		try (Connection connection = this.connect()) {
