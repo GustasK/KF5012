@@ -15,6 +15,6 @@ public class Main {
 		String[] values = new String[] {"Gustenkox"};
 //		database.insert("users", fields, values);
 //		database.delete("users", "id", "=", "1");
-
+		database.query("users", "*", "name", "=", "Gustas");
 	}
 }

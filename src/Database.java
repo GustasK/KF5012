@@ -5,9 +5,21 @@ import java.sql.Statement;
 
 public class Database {
 	
-	public void query()
+	public void query(String table, String option, String field, String operator, String value)
 	{
-		
+		try (Connection connection = this.connect()) {
+			
+			Statement statement = connection.createStatement();
+			String SQL = "SELECT " + option + " FROM " + table + " WHERE " + field + " " + operator + " '" + value + "'";
+			System.out.println(SQL);
+			
+			statement.executeUpdate(SQL);
+			statement.close();
+			connection.close();
+			
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
 	}
 	
 	public void delete(String table, String field, String operator, String value)
