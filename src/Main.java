@@ -3,6 +3,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.*;
 
 public class Main {
 
@@ -15,6 +16,8 @@ public class Main {
 		String[] values = new String[] {"Gustenkox"};
 //		database.insert("users", fields, values);
 //		database.delete("users", "id", "=", "1");
-		database.query("users", "*", "name", "=", "Gustas");
+	
+		List<Task> tasks = database.getTasks();
+		System.out.println(tasks);
 	}
 }

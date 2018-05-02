@@ -1,17 +1,14 @@
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.*;
 
 public class Database {
 	
-	public void query(String table, String option, String field, String operator, String value)
+	public void selectAll(String table)
 	{
 		try (Connection connection = this.connect()) {
 			
 			Statement statement = connection.createStatement();
-			String SQL = "SELECT " + option + " FROM " + table + " WHERE " + field + " " + operator + " '" + value + "'";
-			System.out.println(SQL);
+			String SQL = "SELECT * FROM " + table;
 			
 			statement.executeUpdate(SQL);
 			statement.close();
@@ -20,6 +17,38 @@ public class Database {
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
 		}
+	}
+	
+	public List<Task> getTasks()
+	{
+		List<Task> allTasks = new ArrayList<Task>();
+		
+		try (Connection connection = this.connect()) {
+			
+			Statement statement = connection.createStatement();
+			String SQL = "SELECT * FROM tasks";
+			ResultSet result;
+			
+			result =  statement.executeQuery(SQL);
+			while(result.next()) {
+				int id = result.getInt("id");
+				String title = result.getString("title");
+				int priority = result.getInt("priority");
+				boolean status = result.getBoolean("status");
+				int expectedTimeTaken = result.getInt("expected_time");
+				System.out.println(id + title + " " + status);
+				Task task = new Task(id, title, priority, status, expectedTimeTaken);
+				allTasks.add(task);
+			}
+			
+			statement.close();
+			connection.close();
+			
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+		
+		return allTasks;
 	}
 	
 	public void delete(String table, String field, String operator, String value)
