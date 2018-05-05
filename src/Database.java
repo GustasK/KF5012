@@ -35,35 +35,35 @@ public class Database {
 		return allTasks;
 	}
 	
-//	public List<User> getUsers()
-//	{
-//		List<Task> allUsers = new ArrayList<User>();
-//		
-//		try (Connection connection = this.connect()) {
-//			
-//			Statement statement = connection.createStatement();
-//			String SQL = "SELECT * FROM users";
-//			ResultSet result;
-//			
-//			result =  statement.executeQuery(SQL);
-//			while(result.next()) {
-//				int id = result.getInt("id");
-//				String name = result.getString("name");
-//				String password = result.getString("password");
-//				int permissions = result.getInt("permissions");
-//				User user = new User(id, name, password, permissions);
-//				allUsers.add(user);
-//			}
-//			
-//			statement.close();
-//			connection.close();
-//			
-//		} catch (SQLException e) {
-//			System.out.println(e.getMessage());
-//		}
-//		
-//		return allusers;
-//	}
+	public List<User> getUsers()
+	{
+		List<Task> allUsers = new ArrayList<User>();
+		
+		try (Connection connection = this.connect()) {
+			
+			Statement statement = connection.createStatement();
+			String SQL = "SELECT * FROM users";
+			ResultSet result;
+			
+			result =  statement.executeQuery(SQL);
+			while(result.next()) {
+				int id = result.getInt("id");
+				String name = result.getString("name");
+				String password = result.getString("password");
+				int permissions = result.getInt("permissions");
+				User user = new User(id, name, password, permissions);
+				allUsers.add(user);
+			}
+			
+			statement.close();
+			connection.close();
+			
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+		
+		return allusers;
+	}
 	
 	public void update(String table, int id, String field, String value)
 	{
