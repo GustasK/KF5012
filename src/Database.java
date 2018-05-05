@@ -3,22 +3,6 @@ import java.util.*;
 
 public class Database {
 	
-	public void selectAll(String table)
-	{
-		try (Connection connection = this.connect()) {
-			
-			Statement statement = connection.createStatement();
-			String SQL = "SELECT * FROM " + table;
-			
-			statement.executeUpdate(SQL);
-			statement.close();
-			connection.close();
-			
-		} catch (SQLException e) {
-			System.out.println(e.getMessage());
-		}
-	}
-	
 	public List<Task> getTasks()
 	{
 		List<Task> allTasks = new ArrayList<Task>();
@@ -51,35 +35,55 @@ public class Database {
 		return allTasks;
 	}
 	
-	public List<User> getUsers()
+//	public List<User> getUsers()
+//	{
+//		List<Task> allUsers = new ArrayList<User>();
+//		
+//		try (Connection connection = this.connect()) {
+//			
+//			Statement statement = connection.createStatement();
+//			String SQL = "SELECT * FROM users";
+//			ResultSet result;
+//			
+//			result =  statement.executeQuery(SQL);
+//			while(result.next()) {
+//				int id = result.getInt("id");
+//				String name = result.getString("name");
+//				String password = result.getString("password");
+//				int permissions = result.getInt("permissions");
+//				User user = new User(id, name, password, permissions);
+//				allUsers.add(user);
+//			}
+//			
+//			statement.close();
+//			connection.close();
+//			
+//		} catch (SQLException e) {
+//			System.out.println(e.getMessage());
+//		}
+//		
+//		return allusers;
+//	}
+	
+	public void update(String table, int id, String field, String value)
 	{
-		List<Task> allUsers = new ArrayList<User>();
-		
+		String SQL = "UPDATE " + table + " SET " + field + " = ? WHERE id = ?";
 		try (Connection connection = this.connect()) {
 			
-			Statement statement = connection.createStatement();
-			String SQL = "SELECT * FROM users";
-			ResultSet result;
-			
-			result =  statement.executeQuery(SQL);
-			while(result.next()) {
-				int id = result.getInt("id");
-				String name = result.getString("name");
-				String password = result.getString("password");
-				int permissions = result.getInt("permissions");
-				User user = new User(id, name, password, permissions);
-				allUsers.add(user);
-			}
-			
+			PreparedStatement statement = connection.prepareStatement(SQL);
+				
+			statement.setString(1, value);	
+			statement.setInt(2, id);
+				
+			statement.executeUpdate();
 			statement.close();
 			connection.close();
 			
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
 		}
-		
-		return allusers;
 	}
+
 	
 	public void delete(String table, String field, String operator, String value)
 	{
