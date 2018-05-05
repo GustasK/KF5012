@@ -1,8 +1,3 @@
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.*;
 
 public class Main {
@@ -12,10 +7,9 @@ public class Main {
 		Database database = new Database();
 		
 		System.out.println("PROGRAM STARTS");
-		String[] fields = new String[] {"name"};
-		String[] values = new String[] {"Gustenkox"};
-//		database.insert("users", fields, values);
-//		database.delete("users", "id", "=", "1");
-		database.update("users", 2, "password", "");
-	}
+		MainMenu menu = new MainMenu();
+		List<Task> tasks = database.getTasks();
+		AssignTask assignTask = new AssignTask(tasks);
+		
+	}    
 }

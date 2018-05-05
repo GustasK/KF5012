@@ -1,3 +1,4 @@
+import java.security.Timestamp;
 
 public class Task {
 	
@@ -5,20 +6,20 @@ public class Task {
 	private String title;
 	private int priority;
 	private boolean status;
-//	private Caretaker assignedTo;
-//	private Timestamp startDate;
-//	private Timestamp endDate;
+	private String assignedTo;
+	private int startDate;
+	private int endDate;
 	private int expectedTimeTaken;
 	
-	public Task(int id, String title, int priority, boolean status, /* Caretaker assignedTo, Timestamp startdate, Timestamp endDate, */int expectedTimeTaken)
+	public Task(int id, String title, int priority, boolean status,  String assignedTo, int startDate, int endDate, int expectedTimeTaken)
 	{
 		this.id = id;
 		this.title = title;
 		this.priority = priority;
-		this.status = this.status;
-//		this.assignedTo = assignedTo;
-//		this.startDate = startDate;
-//		this.endDate = endDate;
+		this.status = status;
+		this.assignedTo = assignedTo;
+		this.startDate = startDate;
+		this.endDate = endDate;
 		this.expectedTimeTaken = expectedTimeTaken;
 	}
 
@@ -36,6 +37,30 @@ public class Task {
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	public String getAssignedTo() {
+		return assignedTo;
+	}
+
+	public void setAssignedTo(String assignedTo) {
+		this.assignedTo = assignedTo;
+	}
+
+	public int getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(int startDate) {
+		this.startDate = startDate;
+	}
+
+	public int getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(int endDate) {
+		this.endDate = endDate;
 	}
 
 	public int getPriority() {

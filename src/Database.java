@@ -1,3 +1,4 @@
+import java.security.Timestamp;
 import java.sql.*;
 import java.util.*;
 
@@ -19,9 +20,11 @@ public class Database {
 				String title = result.getString("title");
 				int priority = result.getInt("priority");
 				boolean status = result.getBoolean("status");
+				String assignedTo = result.getString("assigned_to");
+				int startDate = result.getInt("start_date");
+				int endDate = result.getInt("end_date");	
 				int expectedTimeTaken = result.getInt("expected_time");
-				System.out.println(id + title + " " + status);
-				Task task = new Task(id, title, priority, status, expectedTimeTaken);
+				Task task = new Task(id, title, priority, status, assignedTo, startDate, endDate, expectedTimeTaken);
 				allTasks.add(task);
 			}
 			
@@ -37,7 +40,7 @@ public class Database {
 	
 	public List<User> getUsers()
 	{
-		List<Task> allUsers = new ArrayList<User>();
+		List<User> allUsers = new ArrayList<User>();
 		
 		try (Connection connection = this.connect()) {
 			
@@ -51,7 +54,23 @@ public class Database {
 				String name = result.getString("name");
 				String password = result.getString("password");
 				int permissions = result.getInt("permissions");
-				User user = new User(id, name, password, permissions);
+				
+				User user;
+				switch(permissions) {
+					case 1: 
+						user = new Caretaker(id, name, password, permissions);
+						break;
+					case 2:
+						user = new Administrator(id, name, password, permissions);
+						break;
+					case 3:
+						user = new Manager(id, name, password, permissions);
+						break;
+					default:
+						user = new Caretaker(id, name, password, permissions);
+						break;
+				}
+				
 				allUsers.add(user);
 			}
 			
@@ -62,7 +81,7 @@ public class Database {
 			System.out.println(e.getMessage());
 		}
 		
-		return allusers;
+		return allUsers;
 	}
 	
 	public void update(String table, int id, String field, String value)
