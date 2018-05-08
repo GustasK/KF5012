@@ -22,7 +22,7 @@ public class Database {
 				String priority = result.getString("priority");
 				boolean status = result.getBoolean("status");
 				int assignedTo = result.getInt("assigned_to");
-				int startDate = result.getInt("start_date");
+				String startDate = result.getString("start_date");
 				int endDate = result.getInt("end_date");	
 				int expectedTimeTaken = result.getInt("expected_time");
 				Task task = new Task(id, title, type, priority, status, assignedTo, startDate, endDate, expectedTimeTaken);

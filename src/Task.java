@@ -7,12 +7,12 @@ public class Task {
 	private String priority;
 	private boolean status;
 	private int assignedTo;
-	private int startDate;
+	private String startDate;
 	private int endDate;
 	private int expectedTimeTaken;
 	private String type;
 	
-	public Task(int id, String title, String type, String priority, boolean status,  int assignedTo, int startDate, int endDate, int expectedTimeTaken)
+	public Task(int id, String title, String type, String priority, boolean status,  int assignedTo, String startDate, int endDate, int expectedTimeTaken)
 	{
 		this.id = id;
 		this.title = title;
@@ -57,11 +57,11 @@ public class Task {
 		this.assignedTo = assignedTo;
 	}
 
-	public int getStartDate() {
+	public String getStartDate() {
 		return startDate;
 	}
 
-	public void setStartDate(int startDate) {
+	public void setStartDate(String startDate) {
 		this.startDate = startDate;
 	}
 

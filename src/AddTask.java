@@ -106,13 +106,13 @@ public class AddTask extends JFrame implements ActionListener {
 			if(title.getText().equals("")) {
 				JOptionPane.showMessageDialog(null, "Title cannot be blank!", "Error", JOptionPane.ERROR_MESSAGE);
 			} else {
-				Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+				String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
 		        Database database = new Database();
 		        
 		        String[] fields = { "title", "start_date", "priority", "expected_time", "type"};
 		        String[] values = { 
 	        		title.getText(), 
-	        		timestamp.toString(), 
+	        		timeStamp, 
 	        		priority.getSelectedItem().toString(), 
 	        		duration.getSelectedItem().toString(),
 	        		type.getSelectedItem().toString()
