@@ -18,13 +18,14 @@ public class Database {
 			while(result.next()) {
 				int id = result.getInt("id");
 				String title = result.getString("title");
-				int priority = result.getInt("priority");
+				String type = result.getString("type");
+				String priority = result.getString("priority");
 				boolean status = result.getBoolean("status");
-				String assignedTo = result.getString("assigned_to");
+				int assignedTo = result.getInt("assigned_to");
 				int startDate = result.getInt("start_date");
 				int endDate = result.getInt("end_date");	
 				int expectedTimeTaken = result.getInt("expected_time");
-				Task task = new Task(id, title, priority, status, assignedTo, startDate, endDate, expectedTimeTaken);
+				Task task = new Task(id, title, type, priority, status, assignedTo, startDate, endDate, expectedTimeTaken);
 				allTasks.add(task);
 			}
 			
@@ -82,6 +83,43 @@ public class Database {
 		}
 		
 		return allUsers;
+	}
+	
+	public User getUser(int id)
+	{	
+		User user = null;
+		String SQL = "SELECT * FROM users WHERE id = ?";
+		try(Connection connection = this.connect()) {
+		
+			PreparedStatement statement = connection.prepareStatement(SQL);
+			
+			statement.setInt(1, id);
+			ResultSet result = statement.executeQuery();
+			
+			while(result.next()) {
+				String name = result.getString("name");
+				String password = result.getString("password");
+				int permissions = result.getInt("permissions");
+				
+				switch(permissions) {
+					case 1: 
+						user = new Caretaker(id, name, password, permissions);
+						break;
+					case 2:
+						user = new Administrator(id, name, password, permissions);
+						break;
+					case 3:
+						user = new Manager(id, name, password, permissions);
+						break;
+					default:
+						user = new Caretaker(id, name, password, permissions);
+						break;
+				}
+			}	
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+		return user;
 	}
 	
 	public void update(String table, int id, String field, String value)

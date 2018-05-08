@@ -1,10 +1,6 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.SpringLayout;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -15,7 +11,7 @@ public class AdminMenu extends JFrame implements ActionListener {
     private JFrame f;
     private JTabbedPane tp;
     private JComboBox<String> roleComboBox;
-    private JButton btnExit, btnAUConfirm, btnGenerateTempPass, btnEUConfirm, btnEUReset, btnDUConfirm;
+    private JButton btnExit;
     private String[] roles = {"Select one...", "Caretaker", "Administrator", "Manager"};
 
     public AdminMenu() {
@@ -26,17 +22,17 @@ public class AdminMenu extends JFrame implements ActionListener {
 
         f = new JFrame("Admin | Capytec Ltd"); //creates new frame
         tp = new JTabbedPane(); //creates tabbed pane
-        tp.setBounds(50,50,200,200); //sets size of tabbed pane
+        tp.setBounds(50, 50, 200, 200); //sets size of tabbed pane
         setupAddUser(tp);
         setupEditUser(tp);
-//        setupDeleteUser(tp);
+        setupDeleteUser(tp);
         JPanel pnlMenuExit = new JPanel();
         btnExit = new JButton("Exit");
         btnExit.addActionListener(this);
         pnlMenuExit.add(btnExit);
         f.add(tp, BorderLayout.CENTER); //add pane to frame
         f.add(pnlMenuExit, BorderLayout.PAGE_END);
-        f.setSize(600,600); //set size of frame
+        f.setSize(600, 600); //set size of frame
         f.setVisible(true); //make frame visible
     }
 
@@ -58,7 +54,6 @@ public class AdminMenu extends JFrame implements ActionListener {
             }
         });
 
-
         JButton btnAUConfirm = new JButton("Confirm");
         btnAUConfirm.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -67,25 +62,21 @@ public class AdminMenu extends JFrame implements ActionListener {
                 String tempPass = fieldTempPass.getText();
                 System.out.print(forename + " " + role + " " + tempPass);
                 if (forename.equals("") || role.equals("Select one...") || tempPass.equals("")) {
-                    JOptionPane.showMessageDialog(null,"Missing fields");
-                }
-                else {
+                    JOptionPane.showMessageDialog(null, "Missing fields");
+                } else {
                     if (JOptionPane.showConfirmDialog(null, "Add user?", "Confirm add user", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                         if (role.equals("Caretaker")) {
                             role = "1";
-                        }
-                        else if (role.equals("Administrator")) {
+                        } else if (role.equals("Administrator")) {
                             role = "2";
-                        }
-                        else {
+                        } else {
                             role = "3";
                         }
                         for (User user : allUsers) {
                             if (forename.equals(user.name)) {
-                                JOptionPane.showMessageDialog(null,"That username is already taken!");
+                                JOptionPane.showMessageDialog(null, "That username is already taken!");
                                 break;
-                            }
-                            else {
+                            } else {
                                 String[] fields = {"name", "password", "permissions"};
                                 String[] values = {forename, tempPass, role};
                                 database.insert("users", fields, values);
@@ -127,9 +118,13 @@ public class AdminMenu extends JFrame implements ActionListener {
     public void setupEditUser(JTabbedPane tp) {
         JPanel tbEU = new JPanel(); //creates 'Edit user' tab
         JLabel lblselectUser = new JLabel("Select user: ");
-        List<User> users = database.getUsers();
-        String[] usernames;
-        //JComboBox<String> comboUsers = new JComboBox<>(users);
+        JComboBox<String> comboUsers = new JComboBox<String>();
+        comboUsers.addItem("Select one...");
+        for (User user : allUsers) {
+            comboUsers.addItem(user.getName());
+        }
+        JLabel lblID = new JLabel("ID: ");
+        JTextField fieldID = new JTextField("Update values to view");
         JLabel lblEUForename = new JLabel("Forename: ");
         JTextField fieldEUOldForename = new JTextField("Update values to view");
         fieldEUOldForename.setEditable(false);
@@ -138,77 +133,117 @@ public class AdminMenu extends JFrame implements ActionListener {
         JTextField fieldOldRole = new JTextField("Update values to view");
         fieldOldRole.setEditable(false);
         JButton btnEUUpdate = new JButton("Update values");
-        /*btnEUUpdate.addActionListener(new ActionListener() {
-            public void actionPerformed (ActionEvent e){
+        btnEUUpdate.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
                 String selected = comboUsers.getSelectedItem().toString();
-                System.out.print(selected);
                 for (User user : allUsers) {
-                    if (selected.equals(user.name)) {
-                        fieldEUOldForename.setText(user.name);
+                    if (selected.equals(user.getName())) {
+                        fieldID.setText(String.valueOf(user.getUserID()));
+                        fieldEUOldForename.setText(user.getName());
                         fieldOldRole.setText(String.valueOf(user.getAccessLevel()));
                         break;
-                    } else {
-                        System.out.print("no user found");
                     }
                 }
             }
-        });*/
+        });
         roleComboBox = new JComboBox<>(roles);
-        btnEUConfirm = new JButton("Confirm");
-        btnEUConfirm.addActionListener(new ActionListener() {
+        JButton btnConfirm = new JButton("Confirm");
+        btnConfirm.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-
+                database.update("users", Integer.parseInt(fieldID.getText()), "name", fieldEUNewForename.getText());
+                database.update("users", Integer.parseInt(fieldID.getText()), "permissions", comboUsers.getSelectedItem().toString());
             }
         });
-        btnEUReset = new JButton("Reset");
-        btnEUReset.addActionListener(this);
+        JButton btnReset = new JButton("Reset");
+        btnReset.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                
+            }
+        });
 
         tbEU.add(lblselectUser);
-        //tbEU.add(comboUsers);
+        tbEU.add(comboUsers);
         tbEU.add(btnEUUpdate);
+        tbEU.add(lblID);
+        tbEU.add(fieldID);
         tbEU.add(lblEUForename);
         tbEU.add(fieldEUOldForename);
         tbEU.add(fieldEUNewForename);
         tbEU.add(lblAccessLevel);
         tbEU.add(fieldOldRole);
         tbEU.add(roleComboBox);
-        tbEU.add(btnEUConfirm);
-        tbEU.add(btnEUReset);
+        tbEU.add(btnConfirm);
+        tbEU.add(btnReset);
         tp.add("Edit user", tbEU);
     }
 
-//    public void setupDeleteUser(JTabbedPane tp) {
-//        JPanel tbDU = new JPanel(); //creates 'Delete user' tab
-//        JLabel lblDUUserID = new JLabel("Select user: ");
-//        String[] users = null;
-//        for (int i = 0; i < allUsers.size; i++)
-//            users[i] = allUsers[i].name;
-//        
-//        JComboBox<String> comboUsers = new JComboBox<String>(users);
-//        btnDUConfirm = new JButton("Confirm");
-//        btnDUConfirm.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                //database.delete("users","id", "=", )
-//
-//            }
-//
-//        });
-//
-//        tbDU.add(lblDUUserID);
-//        tbDU.add(comboUsers);
-//        tbDU.add(btnDUConfirm);
-//        tp.add("Delete user", tbDU);
-//    }
+    public void setupDeleteUser(JTabbedPane tp) {
+        JPanel tbDU = new JPanel(); //creates 'Delete user' tab
+        JLabel lblSelectUser = new JLabel("Select user: ");
+        JComboBox<String> comboUsers = new JComboBox<String>();
+        JButton btnUpdate = new JButton("Update");
+        JLabel lblID = new JLabel("ID: ");
+        JLabel lblName = new JLabel("Name: ");
+        JTextField fieldID = new JTextField("Update values to view");
+        JTextField fieldName = new JTextField("Update values to view");
+        JButton btnConfirm = new JButton("Confirm");
+        JButton btnReset = new JButton("Reset");
+
+        comboUsers.addItem("Select one...");
+        for (User user : allUsers) {
+            comboUsers.addItem(user.getName());
+        }
+
+        btnUpdate.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String selected = comboUsers.getSelectedItem().toString();
+                for (User user : allUsers) {
+                    if (selected.equals(user.getName())) {
+                        fieldID.setText(String.valueOf(user.getUserID()));
+                        fieldName.setText(user.getName());
+                        break;
+                    }
+                }
+            }
+        });
+
+        btnConfirm.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (JOptionPane.showConfirmDialog(null, "Are you sure you want to delete user?", "Delete user | Capytec Ltd", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    database.delete("users", "id", "=", fieldID.getText());
+                    JOptionPane.showMessageDialog(null, fieldName.getText() + " has been successfully deleted.");
+                }
+            }
+        });
+
+        btnReset.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+
+                comboUsers.setSelectedIndex(0);
+                fieldID.setText("Update values to view");
+                fieldName.setText("Update values to view");
+
+            }
+        });
+
+        tbDU.add(lblSelectUser);
+        tbDU.add(comboUsers);
+        tbDU.add(btnUpdate);
+        tbDU.add(lblID);
+        tbDU.add(fieldID);
+        tbDU.add(lblName);
+        tbDU.add(fieldName);
+        tbDU.add(btnConfirm);
+        tbDU.add(btnReset);
+        tp.add("Delete user", tbDU);
+    }
 
     public void actionPerformed(ActionEvent evt) {
         Object src = evt.getSource();
         if (src == btnExit) {
-            if (JOptionPane.showConfirmDialog(null,"Are you sure you want to exit?", "Exit Admin Menu | Capytec Ltd", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            if (JOptionPane.showConfirmDialog(null, "Are you sure you want to exit?", "Exit Admin Menu | Capytec Ltd", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                 f.dispose();
             }
-        }
-        else if (src == btnAUConfirm) {
-
         }
     }
 

@@ -4,23 +4,33 @@ public class Task {
 	
 	private int id;
 	private String title;
-	private int priority;
+	private String priority;
 	private boolean status;
-	private String assignedTo;
+	private int assignedTo;
 	private int startDate;
 	private int endDate;
 	private int expectedTimeTaken;
+	private String type;
 	
-	public Task(int id, String title, int priority, boolean status,  String assignedTo, int startDate, int endDate, int expectedTimeTaken)
+	public Task(int id, String title, String type, String priority, boolean status,  int assignedTo, int startDate, int endDate, int expectedTimeTaken)
 	{
 		this.id = id;
 		this.title = title;
+		this.type = type;
 		this.priority = priority;
 		this.status = status;
 		this.assignedTo = assignedTo;
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.expectedTimeTaken = expectedTimeTaken;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	public int getId() {
@@ -39,11 +49,11 @@ public class Task {
 		this.title = title;
 	}
 
-	public String getAssignedTo() {
+	public int getAssignedTo() {
 		return assignedTo;
 	}
 
-	public void setAssignedTo(String assignedTo) {
+	public void setAssignedTo(int assignedTo) {
 		this.assignedTo = assignedTo;
 	}
 
@@ -63,11 +73,11 @@ public class Task {
 		this.endDate = endDate;
 	}
 
-	public int getPriority() {
+	public String getPriority() {
 		return priority;
 	}
 
-	public void setPriority(int priority) {
+	public void setPriority(String priority) {
 		this.priority = priority;
 	}
 

@@ -1,79 +1,118 @@
 import java.awt.*;
+import java.util.List;
+import java.util.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+
 import java.io.*;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+import javax.swing.table.TableRowSorter;
+
+
 
 public class MainMenu extends JFrame implements ActionListener {
 	
-    private User currentUser;
     private Database database;
-    private LoginDlg loginDlg;
+    private User currentUser;
+    private LoginDialog loginDlg;
     private ChangePassDlg changePassDlg;
     private AdminMenu adminMenu;
-    private JButton login, logout, changePass, admin, exit;
-    private User user;
+    private JButton login, logout, changePass, admin, exit, addTaskButton;
 
-    public MainMenu() {
+    private JFrame frame;
+    private JButton logoutButton;
+    private DefaultTableModel table;
+    private JComboBox comboBox;
+    private JButton adminButton;
+    
+    private String username;
+
+    public MainMenu(int userID) {
        
     	database = new Database();
-        loginDlg = new LoginDlg(this);
-
-        this.user = user;
-
-        JFrame frame = new JFrame("Main Menu | Capytec Ltd");
-
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setBounds(200, 100, 400, 300);
-
-        JPanel mainPnl = new JPanel();
-        JPanel adminPnl = new JPanel();
-        JPanel exitPnl = new JPanel();
-
-        mainPnl.setLayout(new GridLayout(3, 1));
-        adminPnl.setLayout(new FlowLayout(FlowLayout.RIGHT, 0, 2));
-
-        login = new JButton("Log in");
-        logout = new JButton("Log out");
-        changePass = new JButton("Change password");
-        admin = new JButton("Admin");
-        exit = new JButton("Exit");
-
-        logout.setVisible(false);
-        changePass.setVisible(false);
-        admin.setVisible(false);
-
-        login.addActionListener(this);
-        logout.addActionListener(this);
-        changePass.addActionListener(this);
-        admin.addActionListener(this);
-        exit.addActionListener(this);
-
-        Object[] columnNames = {"Column1",
-                "Column2",
-                "Column3",
-                "Column4",
-                "Column5"};
-        Object[][] data = {
-                {"ValueA1", "ValueA2", "ValueA3", "ValueA4", "ValueA5" },
-                {"ValueB1", "ValueB2", "ValueB3", "ValueB4", "ValueB5" },
-                {"ValueC1", "ValueC2", "ValueC3", "ValueC4", "ValueC5" },
-                {"ValueD1", "ValueD2", "ValueD3", "ValueD4", "ValueD5" },
-                {"ValueE1", "ValueE2", "ValueE3", "ValueE4", "ValueE5" }
-        };
-        JTable table = new JTable(data, columnNames);
-        mainPnl.add(table);
-
-        adminPnl.add(login);
-        adminPnl.add(logout);
-        adminPnl.add(changePass);
-        adminPnl.add(admin);
-        exitPnl.add(exit);
-
-        frame.add(adminPnl, BorderLayout.NORTH);
-        frame.add(mainPnl, BorderLayout.CENTER); //add pane to frame
-        frame.add(exitPnl, BorderLayout.PAGE_END);
-        frame.setSize(450, 400); //set size of frame (width, height)
-        frame.setVisible(true); //make frame visible
+        currentUser = database.getUser(userID);
+    	
+        frame = new JFrame("Main Menu | Capytec Ltd");
+        frame.setBounds(100, 100, 750, 400);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().setLayout(null);
+		
+		logoutButton = new JButton("Logout");
+		logoutButton.setBounds(650, 11, 75, 29);
+		frame.getContentPane().add(logoutButton);
+		logoutButton.addActionListener(this);
+		
+		adminButton = new JButton("Manage users");
+		adminButton.addActionListener(this);
+		adminButton.setBounds(415, 11, 125, 29);
+		frame.getContentPane().add(adminButton);
+		
+		addTaskButton = new JButton("Add task");
+		frame.getContentPane().add(addTaskButton);
+		addTaskButton.addActionListener(this);
+		addTaskButton.setBounds(550, 11, 90, 29);
+		
+		JLabel lblLoggedInAs = new JLabel("Logged in as: " + currentUser.getName());
+		lblLoggedInAs.setFont(new Font("Arial", Font.PLAIN, 13));
+		lblLoggedInAs.setBounds(10, 14, 315, 20);
+		frame.getContentPane().add(lblLoggedInAs);
+		
+		
+		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane.setBounds(10, 58, 714, 240);
+		frame.getContentPane().add(tabbedPane);
+		
+		addMyTasksTab(tabbedPane);
+		addRegularTasks(tabbedPane);
+		addOneOffTasks(tabbedPane);
+		
+//		JPanel panel = new JPanel();
+//		panel.setBounds(10, 45, 565, 171);
+//		frame.getContentPane().add(panel);
+//		
+//		table = new DefaultTableModel();
+//		final TableRowSorter<TableModel> sorter = new TableRowSorter<>(table);
+//		
+//		table.addColumn("ID");
+//		table.addColumn("Task");
+//		table.addColumn("Priority");
+//		table.addColumn("Status");
+//		table.addColumn("Assigned To");
+//		table.addColumn("Start Date");
+//		table.addColumn("End Date");
+//		table.addColumn("Expected Time");
+//		
+//        JTable tasksList = new JTable(table);
+//        tasksList.setRowHeight(25);
+//        tasksList.setRowSorter(sorter);
+//
+//        List<Task> tasks = new ArrayList<Task>();
+//        tasks = database.getTasks();
+//        
+//        for(Task task : tasks){
+//        	table.addRow(new Object[]{task.getId() + "", task.getTitle(), task.getPriority() + "", task.getStatus() + "", task.getAssignedTo() + "", task.getStartDate() + "", task.getEndDate() + "", task.getExpectedTimeTaken() + ""});
+//        }
+//		
+//        tasksList.setBounds(0, 40, 300, 200);
+//        
+//        JScrollPane scrollPanel = new JScrollPane(tasksList);
+//        panel.add(scrollPanel);
+//        
+//		
+//        TableColumn col = tasksList.getColumnModel().getColumn(4);
+//        comboBox = new JComboBox();
+//        comboBox.addItem("Mike");
+//        comboBox.addItem("Anita");
+//        comboBox.addItem("David");
+//        comboBox.addItem("Livia");
+//        col.setCellEditor(new DefaultCellEditor(comboBox));
+//        tasksList.setAutoCreateRowSorter(true);
+        
+		frame.setVisible(true);       
     }
 
     public void actionPerformed(ActionEvent evt) {
@@ -81,9 +120,14 @@ public class MainMenu extends JFrame implements ActionListener {
         if (src == login) {
             loginDlg.setVisible(true);
         }
-        else if (src == logout) {
-            loginDlg.setCurrentUser(null);
-            toggleLoginLogout();
+        else if (src == addTaskButton) {
+        	AddTask task = new AddTask();
+        }
+        else if (src == logoutButton) {
+            System.exit(0); // or this.frame.dispose(); ??
+        }
+        else if (src == adminButton) {
+        	AdminMenu adminMenu = new AdminMenu();
         }
         else if (src == changePass) {
             changePassDlg = new ChangePassDlg(this);
@@ -96,19 +140,112 @@ public class MainMenu extends JFrame implements ActionListener {
         }
     }
 
-    public void toggleLoginLogout() {
-        if (loginDlg.getCurrentUser() == null) { //if user has logged out
-            login.setVisible(true); // makes 'Log in' button visible
-            logout.setVisible(false); // hides 'Log out' button
-            changePass.setVisible(false); // hides 'Change password' button
-            admin.setVisible(false); // hides 'Admin' button
-        } else  {    // if user has logged in
-            login.setVisible(false); // hides 'Log in' button
-            logout.setVisible(true); // makes 'Log out' button visible
-            admin.setVisible(true); // makes 'Admin' button visible
-            changePass.setVisible(true); // makes 'Change password' button visible
-            currentUser = loginDlg.getCurrentUser();
+    public void addMyTasksTab(JTabbedPane tabbedPane) {
+    	
+    	JPanel panel = new JPanel();
+		panel.setBounds(10, 45, 565, 171);
+		frame.getContentPane().add(panel);
+		
+		table = new DefaultTableModel();
+		final TableRowSorter<TableModel> sorter = new TableRowSorter<>(table);
+		
+		table.addColumn("Task");
+		table.addColumn("Priority");
+		table.addColumn("Status");
+		table.addColumn("Start Date");
+		table.addColumn("End Date");
+		table.addColumn("Expected Time");
+		
+        JTable tasksList = new JTable(table);
+        tasksList.setRowHeight(25);
+        tasksList.setRowSorter(sorter);
+
+        List<Task> tasks = new ArrayList<Task>();
+        tasks = database.getTasks();
+        
+        for(Task task : tasks){
+        	if(task.getAssignedTo() == currentUser.getUserID()) {
+        		table.addRow(new Object[]{task.getTitle(), task.getPriority() + "", task.getStatus() + "", task.getStartDate() + "", task.getEndDate() + "", task.getExpectedTimeTaken() + ""});
+        	}
+    	}
+		
+        tasksList.setBounds(0, 40, 300, 200);
+        
+        JScrollPane scrollPanel = new JScrollPane(tasksList);
+        tabbedPane.add("My tasks", scrollPanel);
+    }
+    
+    public void addRegularTasks(JTabbedPane tabbedPane) {
+    	
+    	JPanel panel = new JPanel();
+		panel.setBounds(10, 45, 565, 171);
+		frame.getContentPane().add(panel);
+		
+		table = new DefaultTableModel();
+		final TableRowSorter<TableModel> sorter = new TableRowSorter<>(table);
+		
+		table.addColumn("Task");
+		table.addColumn("Priority");
+		table.addColumn("Status");
+		table.addColumn("Assigned To");
+		table.addColumn("Start Date");
+		table.addColumn("End Date");
+		table.addColumn("Expected Time");
+		
+        JTable tasksList = new JTable(table);
+        tasksList.setRowHeight(25);
+        tasksList.setRowSorter(sorter);
+
+        List<Task> tasks = new ArrayList<Task>();
+        tasks = database.getTasks();
+        
+        for(Task task : tasks){
+        	if(task.getType().equals("regular")) {
+        		table.addRow(new Object[]{task.getTitle(), task.getPriority() + "", task.getStatus() + "", task.getAssignedTo() + "", task.getStartDate() + "", task.getEndDate() + "", task.getExpectedTimeTaken() + ""});
+        		System.out.println("added");
+        	}
+    	}
+		
+        tasksList.setBounds(0, 40, 300, 200);
+        
+        JScrollPane scrollPanel = new JScrollPane(tasksList);
+        tabbedPane.add("Regular tasks", scrollPanel);
+    }
+    
+    public void addOneOffTasks(JTabbedPane tabbedPane) {
+    	
+    	JPanel panel = new JPanel();
+		panel.setBounds(10, 45, 565, 171);
+		frame.getContentPane().add(panel);
+		
+		table = new DefaultTableModel();
+		final TableRowSorter<TableModel> sorter = new TableRowSorter<>(table);
+		
+		table.addColumn("Task");
+		table.addColumn("Priority");
+		table.addColumn("Status");
+		table.addColumn("Assigned To");
+		table.addColumn("Start Date");
+		table.addColumn("End Date");
+		table.addColumn("Expected Time");
+		
+        JTable tasksList = new JTable(table);
+        tasksList.setRowHeight(25);
+        tasksList.setRowSorter(sorter);
+
+        List<Task> tasks = new ArrayList<Task>();
+        tasks = database.getTasks();
+        
+        for(Task task : tasks){
+        	if(task.getType().equals("one-off")) {
+            	table.addRow(new Object[]{task.getTitle(), task.getPriority() + "", task.getStatus() + "", task.getAssignedTo() + "", task.getStartDate() + "", task.getEndDate() + "", task.getExpectedTimeTaken() + " hours"});	
+        	}
         }
+		
+        tasksList.setBounds(0, 40, 300, 200);
+        
+        JScrollPane scrollPanel = new JScrollPane(tasksList);
+        tabbedPane.add("One-off tasks", scrollPanel);
     }
 
     public JButton getAdminButton() {
