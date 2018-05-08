@@ -16,7 +16,6 @@ public class AdminMenu extends JFrame implements ActionListener {
 
     public AdminMenu() {
         database = new Database();
-        allUsers = database.getUsers();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(200, 100, 400, 300);
 
@@ -57,10 +56,10 @@ public class AdminMenu extends JFrame implements ActionListener {
         JButton btnAUConfirm = new JButton("Confirm");
         btnAUConfirm.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                allUsers = database.getUsers();
                 String forename = fieldForename.getText().trim();
                 String role = (String) roleComboBox.getSelectedItem();
                 String tempPass = fieldTempPass.getText();
-                System.out.print(forename + " " + role + " " + tempPass);
                 if (forename.equals("") || role.equals("Select one...") || tempPass.equals("")) {
                     JOptionPane.showMessageDialog(null, "Missing fields");
                 } else {
@@ -116,6 +115,7 @@ public class AdminMenu extends JFrame implements ActionListener {
     } //end of setupAddUser()
 
     public void setupEditUser(JTabbedPane tp) {
+        allUsers = database.getUsers();
         JPanel tbEU = new JPanel(); //creates 'Edit user' tab
         JLabel lblselectUser = new JLabel("Select user: ");
         JComboBox<String> comboUsers = new JComboBox<String>();
@@ -125,6 +125,7 @@ public class AdminMenu extends JFrame implements ActionListener {
         }
         JLabel lblID = new JLabel("ID: ");
         JTextField fieldID = new JTextField("Update values to view");
+        fieldID.setEditable(false);
         JLabel lblEUForename = new JLabel("Forename: ");
         JTextField fieldEUOldForename = new JTextField("Update values to view");
         fieldEUOldForename.setEditable(false);
@@ -135,12 +136,14 @@ public class AdminMenu extends JFrame implements ActionListener {
         JButton btnEUUpdate = new JButton("Update values");
         btnEUUpdate.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                allUsers = database.getUsers();
                 String selected = comboUsers.getSelectedItem().toString();
                 for (User user : allUsers) {
                     if (selected.equals(user.getName())) {
                         fieldID.setText(String.valueOf(user.getUserID()));
                         fieldEUOldForename.setText(user.getName());
                         fieldOldRole.setText(String.valueOf(user.getAccessLevel()));
+                        btnEUUpdate.setEnabled(false);
                         break;
                     }
                 }
@@ -150,14 +153,37 @@ public class AdminMenu extends JFrame implements ActionListener {
         JButton btnConfirm = new JButton("Confirm");
         btnConfirm.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                database.update("users", Integer.parseInt(fieldID.getText()), "name", fieldEUNewForename.getText());
-                database.update("users", Integer.parseInt(fieldID.getText()), "permissions", comboUsers.getSelectedItem().toString());
+                if (fieldEUNewForename.getText().equals("") || roleComboBox.getSelectedItem().equals("Select one...")) {
+                    JOptionPane.showMessageDialog(null,"Missing fields");
+                }
+                else {
+                    database.update("users", Integer.parseInt(fieldID.getText()), "name", fieldEUNewForename.getText());
+                    String accessLevel;
+                    String selectedRole = roleComboBox.getSelectedItem().toString();
+                    if (selectedRole.equals("Caretaker")) {
+                        accessLevel = "1";
+                    } else if (selectedRole.equals("Administrator")) {
+                        accessLevel = "2";
+                    } else if (selectedRole.equals("Manager")) {
+                        accessLevel = "3";
+                    } else {
+                        accessLevel = "0";
+                    }
+                    database.update("users", Integer.parseInt(fieldID.getText()), "permissions", accessLevel);
+                    JOptionPane.showMessageDialog(null, "User edited successfully.");
+                    btnEUUpdate.setEnabled(true);
+                }
             }
         });
         JButton btnReset = new JButton("Reset");
         btnReset.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                
+                comboUsers.setSelectedIndex(0);
+                fieldID.setText("Update values to view");
+                fieldEUNewForename.setText("");
+                fieldEUOldForename.setText("Update values to view");
+                fieldOldRole.setText("Update values to view");
+                btnEUUpdate.setEnabled(true);
             }
         });
 
@@ -190,28 +216,45 @@ public class AdminMenu extends JFrame implements ActionListener {
         JButton btnReset = new JButton("Reset");
 
         comboUsers.addItem("Select one...");
+        allUsers = database.getUsers();
         for (User user : allUsers) {
             comboUsers.addItem(user.getName());
         }
 
         btnUpdate.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                allUsers = database.getUsers();
                 String selected = comboUsers.getSelectedItem().toString();
+                boolean found = false;
+
                 for (User user : allUsers) {
                     if (selected.equals(user.getName())) {
                         fieldID.setText(String.valueOf(user.getUserID()));
                         fieldName.setText(user.getName());
+                        btnUpdate.setEnabled(false);
+                        found = true;
                         break;
+                    } else {
+                        found = false;
                     }
+                }
+                if (!found) {
+                    JOptionPane.showMessageDialog(null, "User not found");
                 }
             }
         });
 
         btnConfirm.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (JOptionPane.showConfirmDialog(null, "Are you sure you want to delete user?", "Delete user | Capytec Ltd", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                    database.delete("users", "id", "=", fieldID.getText());
-                    JOptionPane.showMessageDialog(null, fieldName.getText() + " has been successfully deleted.");
+                if (comboUsers.getSelectedItem().toString().equals("Select one...")) {
+                    JOptionPane.showMessageDialog(null,"You have not selected a user.");
+                }
+                    else {
+                    if (JOptionPane.showConfirmDialog(null, "Are you sure you want to delete user?", "Delete user | Capytec Ltd", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                        System.out.println("ID TO DELETE:" + fieldID.getText());
+                    	database.delete("users", "id", "=", fieldID.getText());
+                        JOptionPane.showMessageDialog(null, fieldName.getText() + " has been successfully deleted.");
+                    }
                 }
             }
         });
@@ -222,6 +265,7 @@ public class AdminMenu extends JFrame implements ActionListener {
                 comboUsers.setSelectedIndex(0);
                 fieldID.setText("Update values to view");
                 fieldName.setText("Update values to view");
+                btnUpdate.setEnabled(true);
 
             }
         });
@@ -256,7 +300,6 @@ public class AdminMenu extends JFrame implements ActionListener {
             char c = alphaNum[random.nextInt(alphaNum.length)];
             string.append(c);
         }
-        System.out.print(string);
         return string.toString();
     }
 }

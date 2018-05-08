@@ -129,8 +129,14 @@ public class Database {
 			
 			PreparedStatement statement = connection.prepareStatement(SQL);
 				
-			statement.setString(1, value);	
-			statement.setInt(2, id);
+			if (field.equals("permissions")) {
+				statement.setInt(1, Integer.parseInt(value));
+				statement.setInt(2, id);
+			}
+			else {
+				statement.setString(1, value);
+				statement.setInt(2,id);
+			}
 				
 			statement.executeUpdate();
 			statement.close();

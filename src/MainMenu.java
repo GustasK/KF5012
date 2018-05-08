@@ -22,15 +22,18 @@ public class MainMenu extends JFrame implements ActionListener {
     private Database database;
     private User currentUser;
     private List<User> users;
+    private List<Integer> userIDs;
     private LoginDialog loginDlg;
     private ChangePassDlg changePassDlg;
     private AdminMenu adminMenu;
-    private JButton login, logout, changePass, admin, exit, addTaskButton, searchButton, saveButton, refreshButton;
+    private JButton login, logout, changePass, admin, exit, addTaskButton, searchButton, saveButton, deleteButton;
+    public JButton refreshButton;
 
     private JFrame frame;
+    private JTable myTasksList, regularTasksList, oneOffTasksList;
     private JButton logoutButton;
     private DefaultTableModel myTasksTable, regularTasksTable, oneOffTasksTable;
-    private JComboBox comboBox;
+    private JComboBox regualarTasksComboBox, oneOffTasksComboBox;
     private JButton adminButton, changePassword;
     private JTextField searchField;
     private JTabbedPane tabbedPane;
@@ -40,7 +43,12 @@ public class MainMenu extends JFrame implements ActionListener {
     	database = new Database();
         currentUser = database.getUser(userID);
         users = database.getUsers();
-    	
+        
+		userIDs = new ArrayList<Integer>();
+		for(User user: users) {
+			userIDs.add(user.getUserID());
+		}
+       
         frame = new JFrame("Main Menu | Capytec Ltd");
         frame.setBounds(100, 100, 750, 400);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -107,13 +115,60 @@ public class MainMenu extends JFrame implements ActionListener {
 		saveButton.setFont(new Font("Arial", Font.BOLD, 11));
 		saveButton.setBounds(575, 324, 65, 29);
 		frame.getContentPane().add(saveButton);
-        
+		
+		deleteButton = new JButton("Delete");
+		deleteButton.addActionListener(this);
+		deleteButton.setFont(new Font("Arial", Font.BOLD, 11));
+		deleteButton.setBounds(490, 324, 80, 29);
+		frame.getContentPane().add(deleteButton);
+
 		frame.setVisible(true);       
     }
 
     public void actionPerformed(ActionEvent evt) {
         Object src = evt.getSource();
-        if (src == refreshButton) {
+        if (src == saveButton) {
+        	switch(tabbedPane.getSelectedIndex()) {
+        		case 1: {
+                	if (regularTasksList.isEditing())
+                		regularTasksList.getCellEditor().stopCellEditing();
+                	
+                	if(regularTasksList.getSelectedRow() != -1) {
+                    	String newValue = userIDs.get(regualarTasksComboBox.getSelectedIndex()).toString();
+                    	int taskID = (Integer) regularTasksList.getValueAt(regularTasksList.getSelectedRow(), 0);
+                    	database.update("tasks", taskID, "assigned_to", newValue);
+                	}
+        		}
+        		case 2: {
+                	if (oneOffTasksList.isEditing())
+                		oneOffTasksList.getCellEditor().stopCellEditing();
+                	
+                	if(oneOffTasksList.getSelectedRow() != -1) {
+                    	String newValue = userIDs.get(oneOffTasksComboBox.getSelectedIndex()).toString();
+                    	int taskID = (Integer) oneOffTasksList.getValueAt(oneOffTasksList.getSelectedRow(), 0);
+                    	database.update("tasks", taskID, "assigned_to", newValue);
+                	}
+        		}
+        	}
+        }
+        else if (src == deleteButton) {
+        	switch(tabbedPane.getSelectedIndex()) {
+	    		case 1: {
+	            	if (regularTasksList.isEditing())
+	            		regularTasksList.getCellEditor().stopCellEditing();
+	            	
+	            	if(regularTasksList.getSelectedRow() != -1) {
+	                	String taskID = regularTasksList.getValueAt(regularTasksList.getSelectedRow(), 0).toString();
+	                	int dialogResult = JOptionPane.showConfirmDialog (null, "Are you sure you want to delete this task?\nTask ID: " + taskID, "Warning!", JOptionPane.YES_NO_OPTION);
+	                	if(dialogResult == JOptionPane.YES_OPTION) {
+		                	database.delete("tasks", "id", "=", taskID);
+		                	refreshButton.doClick();
+	                	}
+	            	}
+	    		}
+        	}
+        }
+        else if (src == refreshButton) {
         	switch(tabbedPane.getSelectedIndex()) {
         		case 0: {
         			for(int i = myTasksTable.getRowCount() - 1; i > -1; i--) {
@@ -155,6 +210,7 @@ public class MainMenu extends JFrame implements ActionListener {
         	        		}
         	        		
         	        		regularTasksTable.addRow(new Object[]{
+        	        			task.getId(),
     	            			task.getTitle(), 
     	            			task.getPriority() + "", 
     	            			task.getStatus() ? "Done" : "Not finished", 
@@ -186,6 +242,7 @@ public class MainMenu extends JFrame implements ActionListener {
         	        		}
         	        		
         	        		oneOffTasksTable.addRow(new Object[]{
+    	        				task.getId(),
     	            			task.getTitle(), 
     	            			task.getPriority() + "", 
     	            			task.getStatus() ? "Done" : "Not finished", 
@@ -244,9 +301,9 @@ public class MainMenu extends JFrame implements ActionListener {
 		myTasksTable.addColumn("End Date");
 		myTasksTable.addColumn("Expected Time");
 		
-        JTable tasksList = new JTable(myTasksTable);
-        tasksList.setRowHeight(25);
-        tasksList.setRowSorter(sorter);
+        myTasksList = new JTable(myTasksTable);
+        myTasksList.setRowHeight(25);
+        myTasksList.setRowSorter(sorter);
         
         List<Task> tasks = new ArrayList<Task>();
         tasks = database.getTasks();
@@ -263,13 +320,13 @@ public class MainMenu extends JFrame implements ActionListener {
         	}
     	}
 		
-        tasksList.setBounds(0, 40, 300, 200);
+        myTasksList.setBounds(0, 40, 300, 200);
         
-        JScrollPane scrollPanel = new JScrollPane(tasksList); 
+        JScrollPane scrollPanel = new JScrollPane(myTasksList); 
         
-        tasksList.getColumnModel().getColumn(1).setPreferredWidth(25);
-        tasksList.getColumnModel().getColumn(2).setPreferredWidth(25);
-        tasksList.getColumnModel().getColumn(5).setPreferredWidth(25);
+        myTasksList.getColumnModel().getColumn(1).setPreferredWidth(25);
+        myTasksList.getColumnModel().getColumn(2).setPreferredWidth(25);
+        myTasksList.getColumnModel().getColumn(5).setPreferredWidth(25);
         
         tabbedPane.add("My tasks", scrollPanel);
     }
@@ -283,6 +340,7 @@ public class MainMenu extends JFrame implements ActionListener {
 		regularTasksTable = new DefaultTableModel();
 		final TableRowSorter<TableModel> sorter = new TableRowSorter<>(regularTasksTable);
 		
+		regularTasksTable.addColumn("Task ID");
 		regularTasksTable.addColumn("Task");
 		regularTasksTable.addColumn("Priority");
 		regularTasksTable.addColumn("Status");
@@ -291,9 +349,9 @@ public class MainMenu extends JFrame implements ActionListener {
 		regularTasksTable.addColumn("End Date");
 		regularTasksTable.addColumn("Expected Time");
 		
-        JTable tasksList = new JTable(regularTasksTable);
-        tasksList.setRowHeight(25);
-        tasksList.setRowSorter(sorter);
+		regularTasksList = new JTable(regularTasksTable);
+		regularTasksList.setRowHeight(25);
+		regularTasksList.setRowSorter(sorter);
 
         List<Task> tasks = new ArrayList<Task>();
         tasks = database.getTasks();
@@ -308,6 +366,7 @@ public class MainMenu extends JFrame implements ActionListener {
         		}
         		
         		regularTasksTable.addRow(new Object[]{
+        			task.getId(),
         			task.getTitle(), 
         			task.getPriority() + "", 
         			task.getStatus() ? "Done" : "Not finished", 
@@ -319,17 +378,19 @@ public class MainMenu extends JFrame implements ActionListener {
         	}
     	}
 		
-        tasksList.setBounds(0, 40, 300, 200);
+        regularTasksList.setBounds(0, 40, 300, 200);
         
-        JScrollPane scrollPanel = new JScrollPane(tasksList);
+        JScrollPane scrollPanel = new JScrollPane(regularTasksList);
         
-		TableColumn col = tasksList.getColumnModel().getColumn(3);
-		comboBox = new JComboBox();
+		TableColumn col = regularTasksList.getColumnModel().getColumn(4);
+	    
+		regualarTasksComboBox = new JComboBox();
 		for(User user: users) {
-			comboBox.addItem(user.getName());
+			regualarTasksComboBox.addItem(user.getName());
 		}
-		col.setCellEditor(new DefaultCellEditor(comboBox));
-		tasksList.setAutoCreateRowSorter(true);
+		
+		col.setCellEditor(new DefaultCellEditor(regualarTasksComboBox));
+		regularTasksList.setAutoCreateRowSorter(true);
 		
         tabbedPane.add("Regular tasks", scrollPanel);
     }
@@ -343,6 +404,7 @@ public class MainMenu extends JFrame implements ActionListener {
 		oneOffTasksTable = new DefaultTableModel();
 		final TableRowSorter<TableModel> sorter = new TableRowSorter<>(oneOffTasksTable);
 		
+		oneOffTasksTable.addColumn("Task ID");
 		oneOffTasksTable.addColumn("Task");
 		oneOffTasksTable.addColumn("Priority");
 		oneOffTasksTable.addColumn("Status");
@@ -351,9 +413,9 @@ public class MainMenu extends JFrame implements ActionListener {
 		oneOffTasksTable.addColumn("End Date");
 		oneOffTasksTable.addColumn("Expected Time");
 		
-        JTable tasksList = new JTable(oneOffTasksTable);
-        tasksList.setRowHeight(25);
-        tasksList.setRowSorter(sorter);
+		oneOffTasksList = new JTable(oneOffTasksTable);
+		oneOffTasksList.setRowHeight(25);
+		oneOffTasksList.setRowSorter(sorter);
 
         List<Task> tasks = new ArrayList<Task>();
         tasks = database.getTasks();
@@ -368,6 +430,7 @@ public class MainMenu extends JFrame implements ActionListener {
         		}
         		
         		oneOffTasksTable.addRow(new Object[]{
+    				task.getId(),
         			task.getTitle(), 
         			task.getPriority() + "", 
         			task.getStatus() ? "Done" : "Not finished",
@@ -379,17 +442,17 @@ public class MainMenu extends JFrame implements ActionListener {
         	}
     	}
 		
-        tasksList.setBounds(0, 40, 300, 200);
+        oneOffTasksList.setBounds(0, 40, 300, 200);
         
-        JScrollPane scrollPanel = new JScrollPane(tasksList);
+        JScrollPane scrollPanel = new JScrollPane(oneOffTasksList);
         
-		TableColumn col = tasksList.getColumnModel().getColumn(3);
-		comboBox = new JComboBox();
+		TableColumn col = oneOffTasksList.getColumnModel().getColumn(4);
+		oneOffTasksComboBox = new JComboBox();
 		for(User user: users) {
-			comboBox.addItem(user.getName());
+			oneOffTasksComboBox.addItem(user.getName());
 		}
-		col.setCellEditor(new DefaultCellEditor(comboBox));
-		tasksList.setAutoCreateRowSorter(true);
+		col.setCellEditor(new DefaultCellEditor(oneOffTasksComboBox));
+		oneOffTasksList.setAutoCreateRowSorter(true);
 		
         tabbedPane.add("One-off tasks", scrollPanel);
     }
