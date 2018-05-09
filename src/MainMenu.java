@@ -10,6 +10,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
+
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -26,14 +28,13 @@ public class MainMenu extends JFrame implements ActionListener {
     private LoginDialog loginDlg;
     private ChangePassDlg changePassDlg;
     private AdminMenu adminMenu;
-    private JButton login, logout, changePass, admin, exit, addTaskButton, searchButton, saveButton, deleteButton;
-    public JButton refreshButton;
+    private JButton login, logout, changePass, admin, exit, addTaskButton, searchButton, saveButton, deleteButton, refreshButton, clearButton;
 
     private JFrame frame;
     private JTable myTasksList, regularTasksList, oneOffTasksList;
     private JButton logoutButton;
     private DefaultTableModel myTasksTable, regularTasksTable, oneOffTasksTable;
-    private JComboBox regualarTasksComboBox, oneOffTasksComboBox;
+    private JComboBox regualarTasksComboBox, oneOffTasksComboBox, myTasksStatusComboBox;
     private JButton adminButton, changePassword;
     private JTextField searchField;
     private JTabbedPane tabbedPane;
@@ -59,20 +60,22 @@ public class MainMenu extends JFrame implements ActionListener {
 		frame.getContentPane().add(logoutButton);
 		logoutButton.addActionListener(this);
 		
-		adminButton = new JButton("Manage users");
-		adminButton.addActionListener(this);
-		adminButton.setBounds(415, 11, 125, 29);
-		frame.getContentPane().add(adminButton);
-		
 		changePassword = new JButton("Change password");
 		changePassword.addActionListener(this);
-		changePassword.setBounds(265, 11, 140, 29);
+		changePassword.setBounds(505, 11, 140, 29);
 		frame.getContentPane().add(changePassword);
 		
-		addTaskButton = new JButton("Add task");
-		frame.getContentPane().add(addTaskButton);
-		addTaskButton.addActionListener(this);
-		addTaskButton.setBounds(550, 11, 90, 29);
+		if(currentUser.accessLevel > 1) {
+			adminButton = new JButton("Manage users");
+			adminButton.addActionListener(this);
+			adminButton.setBounds(375, 11, 125, 29);
+			frame.getContentPane().add(adminButton);
+			
+			addTaskButton = new JButton("Add task");
+			frame.getContentPane().add(addTaskButton);
+			addTaskButton.addActionListener(this);
+			addTaskButton.setBounds(280, 11, 90, 29);
+		}
 		
 		JLabel lblLoggedInAs = new JLabel("Logged in as: " + currentUser.getName());
 		lblLoggedInAs.setFont(new Font("Arial", Font.PLAIN, 13));
@@ -87,6 +90,11 @@ public class MainMenu extends JFrame implements ActionListener {
 		addMyTasksTab(tabbedPane);
 		addRegularTasks(tabbedPane);
 		addOneOffTasks(tabbedPane);
+		
+		if(currentUser.getAccessLevel() > 1) {
+			tabbedPane.setEnabledAt(0, false);
+			tabbedPane.setSelectedIndex(1);
+		}
 		
 		searchField = new JTextField();
 		searchField.setBounds(10, 330, 150, 20);
@@ -104,6 +112,12 @@ public class MainMenu extends JFrame implements ActionListener {
 		frame.getContentPane().add(searchButton);
 		searchButton.addActionListener(this);
 		
+		clearButton = new JButton("Clear");
+		clearButton.setFont(new Font("Arial", Font.PLAIN, 11));
+		clearButton.setBounds(247, 329, 75, 23);
+		frame.getContentPane().add(clearButton);
+		clearButton.addActionListener(this);
+		
 		refreshButton = new JButton("Refresh");
 		refreshButton.setFont(new Font("Arial", Font.BOLD, 11));
 		refreshButton.setBounds(644, 324, 81, 29);
@@ -116,19 +130,40 @@ public class MainMenu extends JFrame implements ActionListener {
 		saveButton.setBounds(575, 324, 65, 29);
 		frame.getContentPane().add(saveButton);
 		
-		deleteButton = new JButton("Delete");
-		deleteButton.addActionListener(this);
-		deleteButton.setFont(new Font("Arial", Font.BOLD, 11));
-		deleteButton.setBounds(490, 324, 80, 29);
-		frame.getContentPane().add(deleteButton);
+		if(currentUser.getAccessLevel() > 1)
+		{
+			deleteButton = new JButton("Delete");
+			deleteButton.addActionListener(this);
+			deleteButton.setFont(new Font("Arial", Font.BOLD, 11));
+			deleteButton.setBounds(490, 324, 80, 29);
+			frame.getContentPane().add(deleteButton);
+		}
 
 		frame.setVisible(true);       
     }
 
     public void actionPerformed(ActionEvent evt) {
         Object src = evt.getSource();
+	
         if (src == saveButton) {
         	switch(tabbedPane.getSelectedIndex()) {
+        		case 0: {
+                	if (myTasksList.isEditing())
+                		myTasksList.getCellEditor().stopCellEditing();
+                	
+                	if(myTasksList.getSelectedRow() != -1) {
+                    	int taskID = (Integer) myTasksList.getValueAt(myTasksList.getSelectedRow(), 0);
+                    	if(myTasksStatusComboBox.getSelectedItem().toString().equals("Done")) {
+                        	String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
+                        	database.update("tasks", taskID, "status", "1");
+                        	database.update("tasks", taskID, "end_date", timeStamp);
+                    	}
+                    	else {
+                    		database.update("tasks", taskID, "status", "0");
+                    		database.update("tasks", taskID, "end_date", "No date yet");
+                    	}       	
+                	}
+        		}
         		case 1: {
                 	if (regularTasksList.isEditing())
                 		regularTasksList.getCellEditor().stopCellEditing();
@@ -151,6 +186,26 @@ public class MainMenu extends JFrame implements ActionListener {
         		}
         	}
         }
+        else if (src == clearButton) {
+        	switch(tabbedPane.getSelectedIndex()) {
+        		case 0: {
+                    TableRowSorter<TableModel> sorter = new TableRowSorter<>(((DefaultTableModel) myTasksList.getModel()));
+                    myTasksList.setRowSorter(null);
+                    break;
+        		}
+        		case 1: {
+                    TableRowSorter<TableModel> sorter = new TableRowSorter<>(((DefaultTableModel) regularTasksList.getModel()));
+                    regularTasksList.setRowSorter(null);
+        			break;
+        		}
+        		case 2: {
+                    TableRowSorter<TableModel> sorter = new TableRowSorter<>(((DefaultTableModel) oneOffTasksList.getModel()));
+                    oneOffTasksList.setRowSorter(null);
+        			break;
+        		}
+        	}
+
+        }
         else if (src == deleteButton) {
         	switch(tabbedPane.getSelectedIndex()) {
 	    		case 1: {
@@ -159,6 +214,20 @@ public class MainMenu extends JFrame implements ActionListener {
 	            	
 	            	if(regularTasksList.getSelectedRow() != -1) {
 	                	String taskID = regularTasksList.getValueAt(regularTasksList.getSelectedRow(), 0).toString();
+	                	int dialogResult = JOptionPane.showConfirmDialog (null, "Are you sure you want to delete this task?\nTask ID: " + taskID, "Warning!", JOptionPane.YES_NO_OPTION);
+	                	if(dialogResult == JOptionPane.YES_OPTION) {
+		                	database.delete("tasks", "id", "=", taskID);
+		                	refreshButton.doClick();
+	                	}
+	            	}
+	    		}
+	    		case 2:
+	    		{
+	            	if (oneOffTasksList.isEditing())
+	            		oneOffTasksList.getCellEditor().stopCellEditing();
+	            	
+	            	if(oneOffTasksList.getSelectedRow() != -1) {
+	                	String taskID = oneOffTasksList.getValueAt(oneOffTasksList.getSelectedRow(), 0).toString();
 	                	int dialogResult = JOptionPane.showConfirmDialog (null, "Are you sure you want to delete this task?\nTask ID: " + taskID, "Warning!", JOptionPane.YES_NO_OPTION);
 	                	if(dialogResult == JOptionPane.YES_OPTION) {
 		                	database.delete("tasks", "id", "=", taskID);
@@ -181,6 +250,7 @@ public class MainMenu extends JFrame implements ActionListener {
         	        for(Task task : tasks){
         	        	if(task.getAssignedTo() == currentUser.getUserID()) {
         	        		myTasksTable.addRow(new Object[]{
+        	        			task.getId(),
         	        			task.getTitle(), 
         	        			task.getPriority() + "", 
         	        			task.getStatus() ? "Done" : "Not finished",  
@@ -261,11 +331,21 @@ public class MainMenu extends JFrame implements ActionListener {
         else if (src == searchButton) {
         	switch(tabbedPane.getSelectedIndex()) {
         		case 0: {
-        			JTable table = new JTable(myTasksTable);
-                    TableRowSorter<TableModel> sorter = new TableRowSorter<>(((DefaultTableModel) table.getModel()));
+                    TableRowSorter<TableModel> sorter = new TableRowSorter<>(((DefaultTableModel) myTasksList.getModel()));
                     sorter.setRowFilter(RowFilter.regexFilter(searchField.getText()));
-
-                    table.setRowSorter(sorter);
+                    myTasksList.setRowSorter(sorter);
+        			break;
+        		}
+        		case 1 : {
+                    TableRowSorter<TableModel> sorter = new TableRowSorter<>(((DefaultTableModel) regularTasksList.getModel()));
+                    sorter.setRowFilter(RowFilter.regexFilter(searchField.getText()));
+                    regularTasksList.setRowSorter(sorter);
+        			break;
+        		}
+        		case 2: {
+                    TableRowSorter<TableModel> sorter = new TableRowSorter<>(((DefaultTableModel) oneOffTasksList.getModel()));
+                    sorter.setRowFilter(RowFilter.regexFilter(searchField.getText()));
+                    oneOffTasksList.setRowSorter(sorter);
         			break;
         		}
         	}
@@ -280,11 +360,19 @@ public class MainMenu extends JFrame implements ActionListener {
         	AdminMenu adminMenu = new AdminMenu();
         }
         else if (src == changePassword) {
-            changePassDlg = new ChangePassDlg(this);
-            changePassDlg.setVisible(true);
+            changePassDlg = new ChangePassDlg(currentUser.getUserID());
         }
     }
 
+
+    public boolean isCellEditable(int row, int column) {
+       if (column == 1) {
+          return false;
+       }  else {
+          return true;
+       }
+    }
+    
     public void addMyTasksTab(JTabbedPane tabbedPane) {
     	
     	JPanel panel = new JPanel();
@@ -294,6 +382,7 @@ public class MainMenu extends JFrame implements ActionListener {
 		myTasksTable = new DefaultTableModel();
 		final TableRowSorter<TableModel> sorter = new TableRowSorter<>(myTasksTable);
 		
+		myTasksTable.addColumn("Task ID");
 		myTasksTable.addColumn("Task");
 		myTasksTable.addColumn("Priority");
 		myTasksTable.addColumn("Status");
@@ -311,6 +400,7 @@ public class MainMenu extends JFrame implements ActionListener {
         for(Task task : tasks){
         	if(task.getAssignedTo() == currentUser.getUserID()) {
         		myTasksTable.addRow(new Object[]{
+    				task.getId(),
         			task.getTitle(), 
         			task.getPriority() + "", 
         			task.getStatus() ? "Done" : "Not finished",  
@@ -324,9 +414,16 @@ public class MainMenu extends JFrame implements ActionListener {
         
         JScrollPane scrollPanel = new JScrollPane(myTasksList); 
         
-        myTasksList.getColumnModel().getColumn(1).setPreferredWidth(25);
+        myTasksList.getColumnModel().getColumn(0).setPreferredWidth(10);
         myTasksList.getColumnModel().getColumn(2).setPreferredWidth(25);
-        myTasksList.getColumnModel().getColumn(5).setPreferredWidth(25);
+        myTasksList.getColumnModel().getColumn(3).setPreferredWidth(25);
+        myTasksList.getColumnModel().getColumn(6).setPreferredWidth(25);
+        
+		TableColumn col = myTasksList.getColumnModel().getColumn(3);
+		myTasksStatusComboBox = new JComboBox();
+		myTasksStatusComboBox.addItem("Not finished");
+		myTasksStatusComboBox.addItem("Done");
+		col.setCellEditor(new DefaultCellEditor(myTasksStatusComboBox));
         
         tabbedPane.add("My tasks", scrollPanel);
     }
@@ -340,7 +437,7 @@ public class MainMenu extends JFrame implements ActionListener {
 		regularTasksTable = new DefaultTableModel();
 		final TableRowSorter<TableModel> sorter = new TableRowSorter<>(regularTasksTable);
 		
-		regularTasksTable.addColumn("Task ID");
+		regularTasksTable.addColumn("ID");
 		regularTasksTable.addColumn("Task");
 		regularTasksTable.addColumn("Priority");
 		regularTasksTable.addColumn("Status");
@@ -381,7 +478,6 @@ public class MainMenu extends JFrame implements ActionListener {
         regularTasksList.setBounds(0, 40, 300, 200);
         
         JScrollPane scrollPanel = new JScrollPane(regularTasksList);
-        
 		TableColumn col = regularTasksList.getColumnModel().getColumn(4);
 	    
 		regualarTasksComboBox = new JComboBox();
@@ -452,8 +548,8 @@ public class MainMenu extends JFrame implements ActionListener {
 			oneOffTasksComboBox.addItem(user.getName());
 		}
 		col.setCellEditor(new DefaultCellEditor(oneOffTasksComboBox));
-		oneOffTasksList.setAutoCreateRowSorter(true);
 		
+		oneOffTasksList.setAutoCreateRowSorter(true);
         tabbedPane.add("One-off tasks", scrollPanel);
     }
 

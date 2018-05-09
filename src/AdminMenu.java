@@ -36,31 +36,41 @@ public class AdminMenu extends JFrame implements ActionListener {
     }
 
     public void setupAddUser(JTabbedPane tp) {
-        // start of add user tab set up
-        JPanel tbAU = new JPanel(); //creates 'Add user' tab
-        JLabel lblForename = new JLabel("Forename: ");
-        JTextField fieldForename = new JTextField(20);
+        //create swing components
+        JPanel tabAddUser = new JPanel();
+        JLabel lblName = new JLabel("Name: ");
+        JTextField fieldName = new JTextField(20);
         JLabel lblRole = new JLabel("Role: ");
         JComboBox<String> roleComboBox = new JComboBox<>(roles);
         JLabel lblTempPass = new JLabel("Temporary password: ");
-        JTextField fieldTempPass = new JTextField("pass");
-        fieldTempPass.setEditable(false);
+        JTextField fieldTempPass = new JTextField("Generate temporary password");
         JButton btnGenerateTempPass = new JButton("Generate temporary password");
+        JButton btnConfirm = new JButton("Confirm");
+        JButton btnReset = new JButton("Reset");
+
+        //alter properties of components
+        fieldTempPass.setEditable(false);
+        btnConfirm.setEnabled(false);
+
+        //add action listeners
+        //generate temporary password button functionality
         btnGenerateTempPass.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 fieldTempPass.setText(generateTempPass());
                 btnGenerateTempPass.setEnabled(false);
+                btnConfirm.setEnabled(true);
             }
         });
 
-        JButton btnAUConfirm = new JButton("Confirm");
-        btnAUConfirm.addActionListener(new ActionListener() {
+        //confirm button functionality
+        btnConfirm.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 allUsers = database.getUsers();
-                String forename = fieldForename.getText().trim();
+                String name = fieldName.getText().trim();
                 String role = (String) roleComboBox.getSelectedItem();
                 String tempPass = fieldTempPass.getText();
-                if (forename.equals("") || role.equals("Select one...") || tempPass.equals("")) {
+
+                if (name.equals("") || role.equals("Select one...") || tempPass.equals("")) { //if fields are empty
                     JOptionPane.showMessageDialog(null, "Missing fields");
                 } else {
                     if (JOptionPane.showConfirmDialog(null, "Add user?", "Confirm add user", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
@@ -71,47 +81,53 @@ public class AdminMenu extends JFrame implements ActionListener {
                         } else {
                             role = "3";
                         }
+                        allUsers  = database.getUsers();
+                        boolean nameTaken = false;
                         for (User user : allUsers) {
-                            if (forename.equals(user.name)) {
-                                JOptionPane.showMessageDialog(null, "That username is already taken!");
-                                break;
-                            } else {
-                                String[] fields = {"name", "password", "permissions"};
-                                String[] values = {forename, tempPass, role};
-                                database.insert("users", fields, values);
+                            if (name.equals(user.getName())) {
+                                nameTaken = true;
                                 break;
                             }
                         }
-
+                        if (!nameTaken) {
+                            String[] fields = {"name", "password", "permissions"};
+                            String[] values = {name, tempPass, role};
+                            database.insert("users", fields, values);
+                            JOptionPane.showMessageDialog(null,"User added successfully.");
+                        }
+                        else {
+                            JOptionPane.showMessageDialog(null,"That username has already been taken.");
+                        }
                     }
                 }
-                fieldForename.setText("");
-                roleComboBox.setSelectedIndex(0);
-                fieldTempPass.setText("Generate a temporary password");
-                btnGenerateTempPass.setEnabled(true);
             }
         });
-        JButton btnAUReset = new JButton("Reset");
-        btnAUReset.addActionListener(new ActionListener() {
+
+        //reset button functionality
+        btnReset.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                fieldForename.setText("");
+                //reset all fields and buttons to default
+                fieldName.setText("");
                 roleComboBox.setSelectedIndex(0);
                 fieldTempPass.setText("Generate a temporary password");
                 btnGenerateTempPass.setEnabled(true);
+                btnConfirm.setEnabled(false);
             }
         });
 
-        tbAU.add(lblForename);
-        tbAU.add(fieldForename);
-        tbAU.add(lblRole);
-        tbAU.add(roleComboBox);
-        tbAU.add(lblTempPass);
-        tbAU.add(fieldTempPass);
-        tbAU.add(btnGenerateTempPass);
-        tbAU.add(btnAUConfirm);
-        tbAU.add(btnAUReset);
-        tp.add("Add user", tbAU); //add tabs to pane
+        //add components to tab
+        tabAddUser.add(lblName);
+        tabAddUser.add(fieldName);
+        tabAddUser.add(lblRole);
+        tabAddUser.add(roleComboBox);
+        tabAddUser.add(lblTempPass);
+        tabAddUser.add(fieldTempPass);
+        tabAddUser.add(btnGenerateTempPass);
+        tabAddUser.add(btnConfirm);
+        tabAddUser.add(btnReset);
 
+        //add tab to tabbed pane
+        tp.add("Add user", tabAddUser);
     } //end of setupAddUser()
 
     public void setupEditUser(JTabbedPane tp) {
@@ -251,7 +267,6 @@ public class AdminMenu extends JFrame implements ActionListener {
                 }
                     else {
                     if (JOptionPane.showConfirmDialog(null, "Are you sure you want to delete user?", "Delete user | Capytec Ltd", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                        System.out.println("ID TO DELETE:" + fieldID.getText());
                     	database.delete("users", "id", "=", fieldID.getText());
                         JOptionPane.showMessageDialog(null, fieldName.getText() + " has been successfully deleted.");
                     }

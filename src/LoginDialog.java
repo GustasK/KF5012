@@ -56,7 +56,6 @@ public class LoginDialog extends JDialog implements ActionListener {
         database = new Database();
         allUsers = database.getUsers();
         for (User user : allUsers) {
-        	System.out.println(user);
             if (username.equals(user.getName()) && password.equals(user.getPassword())) {
                 output = true;
                 setCurrentUser(user.getUserID());

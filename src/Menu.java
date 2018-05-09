@@ -27,6 +27,11 @@ public class Menu {
 
 	private JFrame frame;
 	private JTextField textField;
+	private JTextField textField_1;
+	private JLabel lblConfirmNewPassword;
+	private JTextField textField_2;
+	private JButton btnSubmit;
+	private JButton btnCancel;
 
 	/**
 	 * Launch the application.
@@ -57,65 +62,51 @@ public class Menu {
 	private void initialize() {
 		frame = new JFrame();
 		frame.getContentPane().setBackground(SystemColor.menu);
-		frame.setBounds(100, 100, 600, 402);
+		frame.setBounds(100, 100, 340, 162);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		
-		JButton btnNewButton = new JButton("Logout");
-		btnNewButton.setBounds(500, 11, 75, 29);
-		frame.getContentPane().add(btnNewButton);
-		
-		JLabel lblLoggedInAs = new JLabel("Logged in as:");
-		lblLoggedInAs.setBounds(10, 14, 315, 20);
-		lblLoggedInAs.setFont(new Font("Arial", Font.PLAIN, 13));
-		frame.getContentPane().add(lblLoggedInAs);
-		
-		JButton btnNewButton_1 = new JButton("Add task");
-		btnNewButton_1.setBounds(400, 11, 90, 29);
-		btnNewButton_1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			}
-		});
-		frame.getContentPane().add(btnNewButton_1);
-		
-		JButton btnManageUsers = new JButton("manage users\r\n");
-		btnManageUsers.setBounds(265, 11, 125, 29);
-		btnManageUsers.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			}
-		});
-		frame.getContentPane().add(btnManageUsers);
-		
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setBounds(10, 58, 564, 261);
-		frame.getContentPane().add(tabbedPane);
-		
-		JScrollPane scrollPane = new JScrollPane();
-		tabbedPane.addTab("New tab", null, scrollPane, null);
+		JLabel lblNewLabel = new JLabel("Current password");
+		lblNewLabel.setFont(new Font("Arial", Font.PLAIN, 11));
+		lblNewLabel.setBounds(10, 11, 97, 14);
+		frame.getContentPane().add(lblNewLabel);
 		
 		textField = new JTextField();
-		textField.setBounds(10, 330, 150, 20);
+		lblNewLabel.setLabelFor(textField);
+		textField.setBounds(142, 8, 172, 20);
 		frame.getContentPane().add(textField);
 		textField.setColumns(10);
 		
-		JLabel lblNewLabel = new JLabel("Filter");
-		lblNewLabel.setBounds(10, 310, 150, 14);
-		lblNewLabel.setFont(new Font("Arial", Font.PLAIN, 11));
-		frame.getContentPane().add(lblNewLabel);
+		JLabel lblNewPassword = new JLabel("New password");
+		lblNewPassword.setFont(new Font("Arial", Font.PLAIN, 11));
+		lblNewPassword.setBounds(10, 39, 97, 14);
+		frame.getContentPane().add(lblNewPassword);
 		
-		JButton btnNewButton_2 = new JButton("Search..");
-		btnNewButton_2.setBounds(167, 329, 75, 23);
-		btnNewButton_2.setFont(new Font("Arial", Font.PLAIN, 11));
-		frame.getContentPane().add(btnNewButton_2);
+		textField_1 = new JTextField();
+		lblNewPassword.setLabelFor(textField_1);
+		textField_1.setColumns(10);
+		textField_1.setBounds(142, 36, 172, 20);
+		frame.getContentPane().add(textField_1);
 		
-		JButton btnNewButton_3 = new JButton("Refresh");
-		btnNewButton_3.setFont(new Font("Arial", Font.BOLD, 11));
-		btnNewButton_3.setBounds(494, 324, 81, 29);
-		frame.getContentPane().add(btnNewButton_3);
+		lblConfirmNewPassword = new JLabel("Confirm new password");
+		lblConfirmNewPassword.setFont(new Font("Arial", Font.PLAIN, 11));
+		lblConfirmNewPassword.setBounds(10, 67, 134, 14);
+		frame.getContentPane().add(lblConfirmNewPassword);
 		
-		JButton button = new JButton("Refresh");
-		button.setFont(new Font("Arial", Font.BOLD, 11));
-		button.setBounds(425, 324, 65, 29);
-		frame.getContentPane().add(button);
+		textField_2 = new JTextField();
+		lblConfirmNewPassword.setLabelFor(textField_2);
+		textField_2.setColumns(10);
+		textField_2.setBounds(142, 64, 172, 20);
+		frame.getContentPane().add(textField_2);
+		
+		btnSubmit = new JButton("Submit");
+		btnSubmit.setFont(new Font("Arial", Font.PLAIN, 11));
+		btnSubmit.setBounds(65, 92, 89, 23);
+		frame.getContentPane().add(btnSubmit);
+		
+		btnCancel = new JButton("Cancel");
+		btnCancel.setFont(new Font("Arial", Font.PLAIN, 11));
+		btnCancel.setBounds(164, 92, 89, 23);
+		frame.getContentPane().add(btnCancel);
 	}
 }

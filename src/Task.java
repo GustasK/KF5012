@@ -8,11 +8,11 @@ public class Task {
 	private boolean status;
 	private int assignedTo;
 	private String startDate;
-	private int endDate;
+	private String endDate;
 	private int expectedTimeTaken;
 	private String type;
 	
-	public Task(int id, String title, String type, String priority, boolean status,  int assignedTo, String startDate, int endDate, int expectedTimeTaken)
+	public Task(int id, String title, String type, String priority, boolean status,  int assignedTo, String startDate, String endDate, int expectedTimeTaken)
 	{
 		this.id = id;
 		this.title = title;
@@ -65,11 +65,11 @@ public class Task {
 		this.startDate = startDate;
 	}
 
-	public int getEndDate() {
+	public String getEndDate() {
 		return endDate;
 	}
 
-	public void setEndDate(int endDate) {
+	public void setEndDate(String endDate) {
 		this.endDate = endDate;
 	}
 
