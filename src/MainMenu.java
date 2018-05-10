@@ -17,28 +17,28 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.table.TableRowSorter;
 
-
-
 public class MainMenu extends JFrame implements ActionListener {
 	
     private Database database;
     private User currentUser;
     private List<User> users;
     private List<Integer> userIDs;
-    private LoginDialog loginDlg;
-    private ChangePassDlg changePassDlg;
-    private AdminMenu adminMenu;
-    private JButton login, logout, changePass, admin, exit, addTaskButton, searchButton, saveButton, deleteButton, refreshButton, clearButton;
+    private JButton addTaskButton, searchButton, saveButton, deleteButton, refreshButton, clearButton;
 
     private JFrame frame;
     private JTable myTasksList, regularTasksList, oneOffTasksList;
     private JButton logoutButton;
     private DefaultTableModel myTasksTable, regularTasksTable, oneOffTasksTable;
-    private JComboBox regualarTasksComboBox, oneOffTasksComboBox, myTasksStatusComboBox;
+    private JComboBox regualarTasksComboBox, oneOffTasksComboBox, myTasksStatusComboBox, myTasksExpectedTimeComboBox;
     private JButton adminButton, changePassword;
     private JTextField searchField;
     private JTabbedPane tabbedPane;
 
+    /**
+     * This method creates a JFrame menu which
+     * displays all the information needed.
+     * @param userID This is user ID to be retrieved from database as a currentUser.
+     */
     public MainMenu(int userID) {
        
     	database = new Database();
@@ -153,6 +153,7 @@ public class MainMenu extends JFrame implements ActionListener {
                 	
                 	if(myTasksList.getSelectedRow() != -1) {
                     	int taskID = (Integer) myTasksList.getValueAt(myTasksList.getSelectedRow(), 0);
+                    	
                     	if(myTasksStatusComboBox.getSelectedItem().toString().equals("Done")) {
                         	String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
                         	database.update("tasks", taskID, "status", "1");
@@ -161,7 +162,10 @@ public class MainMenu extends JFrame implements ActionListener {
                     	else {
                     		database.update("tasks", taskID, "status", "0");
                     		database.update("tasks", taskID, "end_date", "No date yet");
-                    	}       	
+                    	}
+                    	
+                    	int expectedTimeValue = myTasksExpectedTimeComboBox.getSelectedIndex() + 1;
+                    	database.update("tasks", taskID, "expected_time", Integer.toString(expectedTimeValue));
                 	}
         		}
         		case 1: {
@@ -187,20 +191,24 @@ public class MainMenu extends JFrame implements ActionListener {
         	}
         }
         else if (src == clearButton) {
+        	TableRowSorter<TableModel> sorter;
         	switch(tabbedPane.getSelectedIndex()) {
         		case 0: {
-                    TableRowSorter<TableModel> sorter = new TableRowSorter<>(((DefaultTableModel) myTasksList.getModel()));
+                    sorter = new TableRowSorter<>(((DefaultTableModel) myTasksList.getModel()));
                     myTasksList.setRowSorter(null);
+                    myTasksList.setAutoCreateRowSorter(true);
                     break;
         		}
         		case 1: {
-                    TableRowSorter<TableModel> sorter = new TableRowSorter<>(((DefaultTableModel) regularTasksList.getModel()));
+                    sorter = new TableRowSorter<>(((DefaultTableModel) regularTasksList.getModel()));
                     regularTasksList.setRowSorter(null);
+                    regularTasksList.setAutoCreateRowSorter(true);
         			break;
         		}
         		case 2: {
-                    TableRowSorter<TableModel> sorter = new TableRowSorter<>(((DefaultTableModel) oneOffTasksList.getModel()));
+                    sorter = new TableRowSorter<>(((DefaultTableModel) oneOffTasksList.getModel()));
                     oneOffTasksList.setRowSorter(null);
+                    oneOffTasksList.setAutoCreateRowSorter(true);
         			break;
         		}
         	}
@@ -238,6 +246,26 @@ public class MainMenu extends JFrame implements ActionListener {
         	}
         }
         else if (src == refreshButton) {
+        	
+	        /*	These two are required to update users list so the dropdown wouldn't crash when the new user is added	*/
+        	DefaultComboBoxModel regularModel = (DefaultComboBoxModel) regualarTasksComboBox.getModel();
+        	regularModel.removeAllElements();
+        	
+        	DefaultComboBoxModel oneOffModel = (DefaultComboBoxModel) oneOffTasksComboBox.getModel();
+        	oneOffModel.removeAllElements();
+        	
+        	users = database.getUsers();
+        	
+			for(User user: users) {
+				userIDs.clear();
+			}
+			
+			for(User user: users) {
+				userIDs.add(user.getUserID());
+				regualarTasksComboBox.addItem(user.getName());
+				oneOffTasksComboBox.addItem(user.getName());
+			}
+			
         	switch(tabbedPane.getSelectedIndex()) {
         		case 0: {
         			for(int i = myTasksTable.getRowCount() - 1; i > -1; i--) {
@@ -360,19 +388,10 @@ public class MainMenu extends JFrame implements ActionListener {
         	AdminMenu adminMenu = new AdminMenu();
         }
         else if (src == changePassword) {
-            changePassDlg = new ChangePassDlg(currentUser.getUserID());
+            ChangePassDlg changePassDlg = new ChangePassDlg(currentUser.getUserID());
         }
     }
 
-
-    public boolean isCellEditable(int row, int column) {
-       if (column == 1) {
-          return false;
-       }  else {
-          return true;
-       }
-    }
-    
     public void addMyTasksTab(JTabbedPane tabbedPane) {
     	
     	JPanel panel = new JPanel();
@@ -424,6 +443,13 @@ public class MainMenu extends JFrame implements ActionListener {
 		myTasksStatusComboBox.addItem("Not finished");
 		myTasksStatusComboBox.addItem("Done");
 		col.setCellEditor(new DefaultCellEditor(myTasksStatusComboBox));
+		
+		TableColumn expectedTimeCol = myTasksList.getColumnModel().getColumn(6);
+		myTasksExpectedTimeComboBox = new JComboBox();
+		for(int i = 1; i <= 24; i++) {
+			myTasksExpectedTimeComboBox.addItem(i);
+		}
+		expectedTimeCol.setCellEditor(new DefaultCellEditor(myTasksExpectedTimeComboBox));
         
         tabbedPane.add("My tasks", scrollPanel);
     }
@@ -551,14 +577,6 @@ public class MainMenu extends JFrame implements ActionListener {
 		
 		oneOffTasksList.setAutoCreateRowSorter(true);
         tabbedPane.add("One-off tasks", scrollPanel);
-    }
-
-    public JButton getAdminButton() {
-        return admin;
-    }
-
-    public JButton getChangePassButton() {
-        return changePass;
     }
 
     public void setCurrentUser(User currentUser){

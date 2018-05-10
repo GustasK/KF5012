@@ -1,9 +1,20 @@
-import java.security.Timestamp;
+/**
+* The database class to communicate with a database.
+* @author	Gustas Kurtkus
+* @version	1.0
+* @since	2018-05-05
+*/
+
 import java.sql.*;
 import java.util.*;
 
 public class Database {
 	
+	/**
+	 * This method is used to retrieve all the tasks from database 
+	 * and return them as an ArrayList.
+	 * @return This returns all the tasks from SQLite database.
+	 */
 	public List<Task> getTasks()
 	{
 		List<Task> allTasks = new ArrayList<Task>();
@@ -39,6 +50,11 @@ public class Database {
 		return allTasks;
 	}
 	
+	/**
+	 * This method is used to retrieve all the users from database 
+	 * and return them as an ArrayList.
+	 * @return This returns all the users from SQLite database.
+	 */
 	public List<User> getUsers()
 	{
 		List<User> allUsers = new ArrayList<User>();
@@ -85,6 +101,11 @@ public class Database {
 		return allUsers;
 	}
 	
+	/**
+	 * This method is used to get an object of a user by the id provided.
+	 * @param id This is an id of a user to be retrieved from a database.
+	 * @return User This returns an object of a user selected from database by id mentioned above.
+	 */
 	public User getUser(int id)
 	{	
 		User user = null;
@@ -122,6 +143,13 @@ public class Database {
 		return user;
 	}
 	
+	/**
+	 * This method is used to update data inside SQLite database.
+	 * @param table This is a table name from a database.
+	 * @param id This is an ID of a task or a user to be updated.
+	 * @param field A field to be updated.
+	 * @param value A value to be updated to.
+	 */
 	public void update(String table, int id, String field, String value)
 	{
 		String SQL = "UPDATE " + table + " SET " + field + " = ? WHERE id = ?";
@@ -146,16 +174,24 @@ public class Database {
 			System.out.println(e.getMessage());
 		}
 	}
-
 	
+	/**
+	 * This method is used to delete data from SQLite database.
+	 * @param table This is a table name from a database.
+	 * @param field This is a field inside a table mentioned above.
+	 * @param operator This is an operator (>, <, =) that is used to compare a field with a value.
+	 * @param value This is a value that is passed for a field.
+	 */
 	public void delete(String table, String field, String operator, String value)
 	{
+		String SQL = "DELETE FROM " + table + " WHERE " + field + " " + operator + " ?";
 		try (Connection connection = this.connect()) {
 			
-			Statement statement = connection.createStatement();
-			String SQL = "DELETE FROM " + table + " WHERE " + field + " " + operator + " " + value;
+			PreparedStatement statement = connection.prepareStatement(SQL);
 			
-			statement.executeUpdate(SQL);
+			statement.setString(1, value);
+			
+			statement.executeUpdate();
 			statement.close();
 			connection.close();
 			
@@ -164,6 +200,13 @@ public class Database {
 		}
 	}
 	
+	/**
+	 * This method is used to insert data into a SQLite database.
+	 * It is executed only if the same amount of fields and values are passed.
+	 * @param table This is a table name from a database.
+	 * @param fields An array of string values that are used as fields from database.
+	 * @param values An array of string values that are used as values for each of the fields.
+	 */
 	public void insert(String table, String[] fields, String[] values)
 	{
 		if(fields.length == values.length)
@@ -187,6 +230,10 @@ public class Database {
 		}
 	}
 	
+	/**
+	 * This method is used to connect to SQLite database.
+	 * @return Connection This returns an instance of a connection
+	 */
 	private Connection connect()
 	{
 		Connection connection = null;

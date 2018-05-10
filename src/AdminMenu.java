@@ -31,7 +31,7 @@ public class AdminMenu extends JFrame implements ActionListener {
         pnlMenuExit.add(btnExit);
         f.add(tp, BorderLayout.CENTER); //add pane to frame
         f.add(pnlMenuExit, BorderLayout.PAGE_END);
-        f.setSize(600, 600); //set size of frame
+        f.setSize(600, 300); //set size of frame
         f.setVisible(true); //make frame visible
     }
 
@@ -41,6 +41,7 @@ public class AdminMenu extends JFrame implements ActionListener {
         JLabel lblName = new JLabel("Name: ");
         JTextField fieldName = new JTextField(20);
         JLabel lblRole = new JLabel("Role: ");
+        lblRole.setBounds(50, 50, 50, 50);
         JComboBox<String> roleComboBox = new JComboBox<>(roles);
         JLabel lblTempPass = new JLabel("Temporary password: ");
         JTextField fieldTempPass = new JTextField("Generate temporary password");

@@ -22,7 +22,7 @@ public class LoginDialog extends JDialog implements ActionListener {
 
     public LoginDialog()
     {
-		frame = new JFrame();
+		frame = new JFrame("Capytec Ltd");
 		frame.setBounds(100, 100, 450, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);

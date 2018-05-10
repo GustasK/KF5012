@@ -1,3 +1,10 @@
+/**
+* The AddTask class to add tasks by administrators and managers.
+* @author	Gustas Kurtkus
+* @version	1.0
+* @since	2018-05-05
+*/
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,6 +29,10 @@ public class AddTask extends JFrame implements ActionListener {
 	private JComboBox<String> type;
 	private JComboBox<Integer> duration;
 
+	/**
+	 * This method is a constructor which creates a JFrame with
+	 * a form inside to enter the details of a task.
+	 */
 	public AddTask() {
 		
 		frame = new JFrame("Add task");
@@ -98,7 +109,11 @@ public class AddTask extends JFrame implements ActionListener {
 		
 		frame.setVisible(true);
 	}
-	
+
+	/**
+	 * This method is to listed for buttons and retrieve the
+	 * data from them.
+	 */
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == cancelButton) {
 			this.frame.dispose();
